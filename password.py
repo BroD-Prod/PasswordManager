@@ -1,10 +1,26 @@
-def writePassword():
-    possible_chars = "A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,1,2,3,4,5,6,7,8,9,0"
-    passwordAmount = input("Input the amount of desired Unique Strong Passwords: ")
-    for i in passwordAmount:
-        k = possible_chars.split(",")
-        print(k)
+import hashlib
 
 
+class Password:
+    def __init__(self):
+        self.passwords = []
+        self.password_hash = []
 
-writePassword()
+    def hash_password(self, password):
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        self.password_hash.append(hashed_password)
+        return hashed_password
+
+
+def main():
+    username = input("Please create a username: ")
+    password = input("Please create a Password: ")
+    password_manager = Password()
+    hashed_password = password_manager.hash_password(password)
+    user = {
+        username : hashed_password
+    }
+    print(user)
+
+if __name__ == "__main__":
+    main()

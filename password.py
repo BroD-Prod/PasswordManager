@@ -25,28 +25,28 @@ def register_user():
        "username": username,
         "hashed_password": hashed_user_password
     }
-    collection.insert_one(user_dict)
+    collection.insert(user_dict)
 
 def login_user():
     client = pymongo.MongoClient()
     my_db = client["password_manager"]
     collection = my_db["users"]
-    password_manager = Password()
     username = input("Please enter your username: ")
     password = input("Please enter your password: ")
 
-    if not collection.find({"username": username}):
+    user = collection.find_one({"username":username})
+
+    if not user:
         print("Username Not Found, Please Try Again")
         return
-    if not collection.find({"hashed_password": password_manager.hash_password(password)}):
-        print("Password Invalid")
     else:
-        print("Welcome to Password Manager")
+        hashed_password = user.get("hashed_password")
+        if hashed_password and bcrypt.checkpw(password=password.encode(),hashed_password=hashed_password):
+            print("Welcome to Password Manager")
+        else:
+            print("Password Invalid")
 
 def main():
-    client = pymongo.MongoClient()
-    my_db = client["password_manager"]
-    collection = my_db["users"]
     while True:
         user_status = input("Welcome to Password Manager, Are You a New User? (Y/N)")
         if user_status == "Y":

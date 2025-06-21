@@ -1,15 +1,16 @@
-import hashlib
+import bcrypt
 import pymongo
 
 class Password:
     def __init__(self):
-        self.passwords = []
         self.password_hash = []
 
     def hash_password(self, password):
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()
-        self.password_hash.append(hashed_password)
-        return hashed_password
+        salt_rounds = 13
+        salt = bcrypt.gensalt(salt_rounds)
+        password = bcrypt.hashpw(password=password.encode(),salt=salt)
+        self.password_hash.append(password)
+        return password
 
 
 def register_user():
@@ -19,10 +20,10 @@ def register_user():
     password_manager = Password()
     username = input("Please create a username: ")
     password = input("Please create a Password: ")
-    hashed_password = password_manager.hash_password(password)
+    hashed_user_password = password_manager.hash_password(password)
     user_dict = {
        "username": username,
-        "hashed_password": hashed_password
+        "hashed_password": hashed_user_password
     }
     collection.insert_one(user_dict)
 

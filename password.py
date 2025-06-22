@@ -1,5 +1,8 @@
 import bcrypt
 import pymongo
+from flask import Flask, jsonify, request
+
+app = Flask(__name__)
 
 class Password:
     def __init__(self):
@@ -13,47 +16,58 @@ class Password:
         return password
 
 
+@app.route('/register',methods=['POST'])
 def register_user():
     client = pymongo.MongoClient()
     my_db = client["password_manager"]
     collection = my_db["users"]
     password_manager = Password()
-    username = input("Please create a username: ")
-    password = input("Please create a Password: ")
+    response = request.get_json()
+    username = response.get("username")
+    password = response.get("password")
     hashed_user_password = password_manager.hash_password(password)
     user_dict = {
        "username": username,
         "hashed_password": hashed_user_password
     }
-    collection.insert(user_dict)
+    try:
+        collection.insert_one(user_dict)
+        return jsonify("User Successfully Created"), 201
+    except Exception as e:
+        return jsonify(e), 400
 
+
+@app.route('/login', methods=['POST'])
 def login_user():
     client = pymongo.MongoClient()
     my_db = client["password_manager"]
     collection = my_db["users"]
-    username = input("Please enter your username: ")
-    password = input("Please enter your password: ")
 
-    user = collection.find_one({"username":username})
+    response = request.get_json()
+    username = response.get("username")
+    password = response.get("password")
 
-    if not user:
-        print("Username Not Found, Please Try Again")
-        return
+    if not username or not password:
+        return jsonify("Username/Password Required. Please Try Again"), 400
     else:
-        hashed_password = user.get("hashed_password")
-        if hashed_password and bcrypt.checkpw(password=password.encode(),hashed_password=hashed_password):
-            print("Welcome to Password Manager")
+        user = collection.find_one({"username": username})
+        if not user:
+            return jsonify("Invalid Username, Please Try Again"), 400
         else:
-            print("Password Invalid")
+            hashed_password = user.get("hashed_password")
+            if hashed_password and bcrypt.checkpw(password=password.encode(), hashed_password=hashed_password):
+                return jsonify("Welcome to Password Manager"), 201
+            else:
+                return jsonify("Invalid Password, Please Try Again"), 400
+
 
 def main():
+    response = request.get_json()
     while True:
-        user_status = input("Welcome to Password Manager, Are You a New User? (Y/N)")
-        if user_status == "Y":
-           register_user()
+        if response.get("yes"):
+            register_user()
         else:
             login_user()
 
-
 if __name__ == "__main__":
-    main()
+    app.run('0.0.0.0', 5001)

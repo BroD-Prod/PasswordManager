@@ -4,6 +4,10 @@ from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
+client = pymongo.MongoClient()
+my_db = client["password_manager"]
+collection = my_db["users"]
+
 class Password:
     def __init__(self):
         self.password_hash = []
@@ -15,20 +19,31 @@ class Password:
         self.password_hash.append(password)
         return password
 
+@app.route('/create_password',methods=['POST'])
+def create_password():
+    password_manager = Password()
+    response = request.get_json()
+    saved_site = {
+        "site": response.get('site'),
+        "password": password_manager.hash_password(response.get('password'))
+    }
+    try:
+        collection.insert_one({"saved_passwords": saved_site})
+        return jsonify("Password for " + saved_site['site'] + " saved."), 201
+    except Exception as e:
+        return jsonify(e), 400
+
 
 @app.route('/register',methods=['POST'])
 def register_user():
-    client = pymongo.MongoClient()
-    my_db = client["password_manager"]
-    collection = my_db["users"]
     password_manager = Password()
     response = request.get_json()
-    username = response.get("username")
-    password = response.get("password")
-    hashed_user_password = password_manager.hash_password(password)
     user_dict = {
-       "username": username,
-        "hashed_password": hashed_user_password
+       "username": response.get("username"),
+        "hashed_password": password_manager.hash_password(response.get("password")),
+        "saved_passwords": {
+
+        }
     }
     try:
         collection.insert_one(user_dict)
@@ -39,10 +54,6 @@ def register_user():
 
 @app.route('/login', methods=['POST'])
 def login_user():
-    client = pymongo.MongoClient()
-    my_db = client["password_manager"]
-    collection = my_db["users"]
-
     response = request.get_json()
     username = response.get("username")
     password = response.get("password")
@@ -62,12 +73,9 @@ def login_user():
 
 
 def main():
-    response = request.get_json()
-    while True:
-        if response.get("yes"):
-            register_user()
-        else:
-            login_user()
+    register_user()
+    login_user()
+    create_password()
 
 if __name__ == "__main__":
     app.run('0.0.0.0', 5001)

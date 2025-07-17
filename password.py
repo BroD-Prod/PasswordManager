@@ -1,10 +1,13 @@
 import bcrypt
 import pymongo
+import os
+from dotenv import load_dotenv
 from flask import Flask, jsonify, request, session
 
-app = Flask(__name__)
-app.secret_key = "your-very-secret-key"
+load_dotenv()
 
+app = Flask(__name__)
+app.secret_key = os.getenv("KEY")
 
 client = pymongo.MongoClient()
 my_db = client["password_manager"]

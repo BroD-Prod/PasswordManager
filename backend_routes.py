@@ -55,7 +55,7 @@ def change_password():
             }
         )
         return jsonify(f"Passwords for {site} successfully changed")
-
+    
     except Exception as e:
         return jsonify(e), 500
 

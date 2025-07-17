@@ -9,4 +9,4 @@ class Password:
         salt = bcrypt.gensalt(salt_rounds)
         hash = bcrypt.hashpw(password=password.encode(),salt=salt)
         self.password_hash.append(hash)
-        return password
+        return hash

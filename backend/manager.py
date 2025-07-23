@@ -1,24 +1,23 @@
 import os
 import pymongo
-import src.login_password_hash as login_password_hash
-import bcrypt
+import src.manager_password_hash as hasher
 from dotenv import load_dotenv
-from flask import Flask, jsonify, request, session
-
-app = Flask(__name__)
-app.secret_key = os.getenv("KEY")
+from flask import Flask, jsonify, request, session, Blueprint
 
 client = pymongo.MongoClient()
 my_db = client["password_manager"]
 collection = my_db["users"]
 
-@app.route('/create_password',methods=['POST'])
+manager_bp = Blueprint('manager',__name__,'/manager')
+
+hasher = hasher.Manager_Password()
+
+@manager_bp.route('/create_password',methods=['POST'])
 def create_password():
-    password_manager = login_password_hash.Login_Password()
     response = request.get_json()
     saved_site = {
         "site": response.get('site'),
-        "password": password_manager.hash_password(response.get('password'))
+        "password": hasher.encrypt_site_password(response.get('password'))
     }
     try:
         collection.insert_one({"saved_passwords": saved_site})
@@ -26,7 +25,7 @@ def create_password():
     except Exception as e:
         return jsonify(e), 400
 
-@app.route('/change_password',methods=['POST'])
+@manager_bp.route('/change_password',methods=['POST'])
 def change_password():
     username = session.get("username")
     if not username:
@@ -59,13 +58,12 @@ def change_password():
     except Exception as e:
         return jsonify(e), 500
 
-@app.route('/register',methods=['POST'])
+@manager_bp.route('/register',methods=['POST'])
 def register_user():
-    password_manager = login_password_hash.Login_Password()
     response = request.get_json()
     user_dict = {
        "username": response.get("username"),
-        "hashed_password": password_manager.hash_password(response.get("password")),
+        "hashed_password": hasher.encrypt_site_password(response.get("password")),
         "saved_passwords": {
         }
     }

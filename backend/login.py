@@ -2,23 +2,21 @@ import os
 import pymongo
 import src.login_password_hash as login_password_hash
 import bcrypt
-from dotenv import load_dotenv
-from flask import Flask, jsonify, request, session
-
-app = Flask(__name__)
-app.secret_key = os.getenv("KEY")
+from flask import Blueprint, jsonify, request, session
 
 client = pymongo.MongoClient()
 my_db = client["password_manager"]
 collection = my_db["users"]
 
-@app.route('/register',methods=['POST'])
+login_bp = Blueprint('login',__name__,url_prefix='/api/auth')
+
+@login_bp.route('/register',methods=['POST'])
 def register_user():
-    password_manager = login_password_hash.Login_Password()
+    login_hasher = login_password_hash.Login_Password()
     response = request.get_json()
     user_dict = {
        "username": response.get("username"),
-        "hashed_password": password_manager.hash_password(response.get("password")),
+        "hashed_password": login_hasher.hash_password(response.get("password")),
         "saved_passwords": {
         }
     }
@@ -29,7 +27,7 @@ def register_user():
         return jsonify(e), 400
 
 
-@app.route('/login', methods=['POST'])
+@login_bp.route('/', methods=['POST'])
 def login_user():
     response = request.get_json()
     username = response.get("username")
@@ -52,6 +50,3 @@ def login_user():
 def main():
     register_user()
     login_user()
-
-if __name__ == "__main__":
-    app.run('0.0.0.0', 5001)

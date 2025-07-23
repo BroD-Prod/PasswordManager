@@ -5,7 +5,7 @@ class TestPassword(unittest.TestCase):
     def test_hash_login_password_returns_bytes(self):
         password_manager = login_password_hash.Login_Password()
         result = password_manager.hash_password("securepassword")
-        self.assertIsInstance(result, bytes)
+        self.assertIsInstance(result, str)
 
     def test_stored_hashed_password(self, test_password="password"):
         password_manager = login_password_hash.Login_Password()

@@ -2,11 +2,9 @@ import bcrypt
 
 class Login_Password:
     def __init__(self):
-        self.password_hash = []
+        pass
 
     def hash_password(self, password):
-        salt_rounds = 13
-        salt = bcrypt.gensalt(salt_rounds)
-        hash = bcrypt.hashpw(password=password.encode(),salt=salt)
-        self.password_hash.append(hash)
-        return hash
+        salt = bcrypt.gensalt(rounds=13)
+        hash = bcrypt.hashpw(password=password.encode('utf-8'),salt=salt)
+        return hash.decode('utf-8')

@@ -41,7 +41,7 @@ def login_user():
             return jsonify("Invalid Username, Please Try Again"), 400
         else:
             hashed_password = user.get("hashed_password")
-            if hashed_password and bcrypt.checkpw(password=password.encode(), hashed_password=hashed_password):
+            if hashed_password and bcrypt.checkpw(password=password.encode('utf-8'), hashed_password=hashed_password):
                 session["username"] = username
                 return jsonify("Welcome to Password Manager"), 201
             else:

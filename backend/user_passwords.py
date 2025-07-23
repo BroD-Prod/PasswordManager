@@ -74,33 +74,3 @@ def register_user():
         return jsonify("User Successfully Created"), 201
     except Exception as e:
         return jsonify(e), 400
-
-
-@app.route('/login', methods=['POST'])
-def login_user():
-    response = request.get_json()
-    username = response.get("username")
-    password = response.get("password")
-
-    if not username or not password:
-        return jsonify("Username/Password Required. Please Try Again"), 400
-    else:
-        user = collection.find_one({"username": username})
-        if not user:
-            return jsonify("Invalid Username, Please Try Again"), 400
-        else:
-            hashed_password = user.get("hashed_password")
-            if hashed_password and bcrypt.checkpw(password=password.encode(), hashed_password=hashed_password):
-                session["username"] = username
-                return jsonify("Welcome to Password Manager"), 201
-            else:
-                return jsonify("Invalid Password, Please Try Again"), 400
-            
-def main():
-    register_user()
-    login_user()
-    create_password()
-    change_password()
-
-if __name__ == "__main__":
-    app.run('0.0.0.0', 5001)

@@ -1,6 +1,6 @@
 import bcrypt
 
-class Password:
+class Login_Password:
     def __init__(self):
         self.password_hash = []
 

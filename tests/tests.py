@@ -11,3 +11,4 @@ class TestPassword(unittest.TestCase):
         password_manager = login_password_hash.Login_Password()
         hash = password_manager.hash_password(test_password)
         self.assertIsNot(test_password, password_manager.password_hash[0])
+

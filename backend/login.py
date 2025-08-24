@@ -46,7 +46,3 @@ def login_user():
                 return jsonify("Welcome to Password Manager"), 201
             else:
                 return jsonify("Invalid Password, Please Try Again"), 400
-            
-def main():
-    register_user()
-    login_user()
